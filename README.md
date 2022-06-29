@@ -28,10 +28,9 @@ To build and upload the OSC LED receiver to a Pi:
 
 1. `cd ./pi_osc_receiver`
 2. `cargo build --target armv7-unknown-linux-gnueabihf && scp ./target/armv7-unknown-linux-gnueabihf/debug/pi_osc_receiver $PI:~/`
-
-Then once your ssh'd into the pi you can run the LED controller with:
-
-`RUST_LOG="pi_osc_receiver=trace" ./pi_osc_receiver`
+3. Then ssh into the pi and run the LED controller with:
+  `RUST_LOG="pi_osc_receiver=trace" ./pi_osc_receiver`
+4. That's it! Now you can send OSC packets to your pi and your LEDs should light up!
 
 If you'd like to have the pi automatically start the osc receiver each time it boots there is an example SystemD service file in `./pi_osc_receiver/pi_osc_receiver.service`.
 
