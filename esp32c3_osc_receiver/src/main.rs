@@ -135,67 +135,30 @@ fn main() -> ! {
                         .get_socket_and_context::<UdpSocket>(socket_handle);
 
                     // Udp
-                    socket.bind(1234).unwrap();
+                    socket.bind(9000).unwrap();
 
-                    stage = 2;
-                    // println!("Lets receive UDP packets!");
-                    println!("Lets receive UDP packets!");
+                    stage = 1;
+
+                    println!("Ready to receive UDP packet!");
                 }
-                // 1 => {
-                //     let socket = wifi_interface
-                //         .network_interface()
-                //         .get_socket::<UdpSocket>(http_socket_handle);
-
-                //     if socket
-                //         .send_slice(&b"Hello World!\r\n\r\n"[..])
-                //         .is_ok()
-                //     {
-                //         stage = 2;
-                //         println!("Lets receive");
-                //     }
-                // }
-                2 => {
+                1 => {
                     let socket = wifi_interface
                         .network_interface()
                         .get_socket::<UdpSocket>(socket_handle);
 
-                    println!("Waiting to receive a packet...");
-                    if let Ok((s, _)) = socket.recv_slice(&mut buffer[idx..]) {
-                        println!("RX: {:?}", s);
-                        if s > 0 {
-                            idx += s;
+                    if let Ok((s, _)) = socket.recv_slice(&mut buffer[..]) {
+                        println!("Received a UDP Packet! ({:?} Bytes)", s);
+                        for c in &buffer[..s] {
+                            print!("{}", *c as char);
                         }
-                    } else {
-                        stage = 3;
-
-                        if idx > 0 {
-                            println!("Received a UDP Packet! Bytes: {:?}", idx);
-                            println!("{:?}", buffer);
-
-                            for c in &buffer[..idx] {
-                                print!("{}", *c as char);
-                            }
+                        println!("");
+                        println!("<EOF>");
+                        // Reset the buffer
+                        for elem in buffer.iter_mut().take(s) {
+                            *elem = 0;
                         }
-                        // println!("");
                     }
                 }
-                // 3 => {
-                //     println!("Close");
-                //     let socket = wifi_interface
-                //         .network_interface()
-                //         .get_socket::<TcpSocket>(socket_handle);
-
-                //     socket.close();
-                //     stage = 4;
-                // }
-                // 4 => {
-                //     waiter -= 1;
-                //     if waiter == 0 {
-                //         idx = 0;
-                //         waiter = 50000;
-                //         stage = 0;
-                //     }
-                // }
                 _ => (),
             }
         }

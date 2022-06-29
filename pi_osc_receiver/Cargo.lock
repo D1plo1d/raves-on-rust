@@ -160,23 +160,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2dffe52ecf27772e601905b7522cb4ef790d2cc203488bbd0e2fe85fcb74566d"
 
 [[package]]
-name = "micro-tree-rust"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "apa102-spi",
- "embedded-hal 0.2.7",
- "local-ip-address",
- "log",
- "osc_receiver",
- "pretty_env_logger",
- "rosc",
- "rppal",
- "serde",
- "smart-leds",
-]
-
-[[package]]
 name = "minimal-lexical"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -232,6 +215,23 @@ dependencies = [
  "embedded-hal 0.2.7",
  "log",
  "rosc",
+ "serde",
+ "smart-leds",
+]
+
+[[package]]
+name = "pi_osc_receiver"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "apa102-spi",
+ "embedded-hal 0.2.7",
+ "local-ip-address",
+ "log",
+ "osc_receiver",
+ "pretty_env_logger",
+ "rosc",
+ "rppal",
  "serde",
  "smart-leds",
 ]

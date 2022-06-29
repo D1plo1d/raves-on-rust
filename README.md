@@ -5,7 +5,7 @@ The raves-on-rust receiver works like a screen - it accepts an array of OSC colo
 Supported Platforms:
 
 - **Raspberry Pi** - Complete!
-- **ESP32C3** - Work in progress / not useable / currently blocked on UDP support from esp-wifi.
+- **ESP32C3** - Work in progress
 
 Features:
 
