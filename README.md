@@ -11,6 +11,7 @@ Features:
 
 - **Super simple rendering** - the raves-on-rust receiver displays the OSC colors array exactly as it's received
 - **Scalable design** - a laptop can send to just one receiver for a small project or a whole array of raves-on-rust receivers for a larger installation.
+- **Build in Rust** - who wouldn't want their LEDs running [the most loved language in the world!?](https://www.reddit.com/r/rust/comments/owll2j/rust_is_the_most_loved_language_six_years_in_a/)
 
 ## Useage
 
