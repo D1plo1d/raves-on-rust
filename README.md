@@ -14,7 +14,7 @@ Features:
 
 ## Useage
 
-**New to Rust?** If your new to Rust you'll want to install [rustup](https://rustup.rs/) before anything else!
+**New to Rust?** You'll want to install [rustup](https://rustup.rs/) before anything else!
 
 ### Raspberry Pi Receiver
 
