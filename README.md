@@ -1,6 +1,6 @@
 A pure Rust [Open Sound Control](https://opensoundcontrol.stanford.edu/) receiver for controlling APA102 and SK9822 LEDs.
 
-The raves-on-rust receiver works like a screen - it accepts an array of OSC colors addressed to `led_strips/0` and renders the colors on the LEDs. You can generate patterns however you like programatically or via a OSC controller app and send them to the raves-on-rust receiver over wifi.
+The raves-on-rust receiver works like a screen - it accepts an array of OSC colors addressed to `led_strips/0` and then displays those colors using the addressable LED strip. You can generate patterns however you like - programatically or via a OSC controller app and send them to the raves-on-rust receiver over wifi.
 
 Supported Platforms:
 
@@ -17,6 +17,12 @@ Features:
 **New to Rust?** If your new to Rust you'll want to install [rustup](https://rustup.rs/) before anything else!
 
 ### Raspberry Pi Receiver
+
+#### Wiring
+
+First wire your LEDs to your Raspberry Pi by following the wiring instructions at: https://pimylifeup.com/raspberry-pi-led-strip-apa102/
+
+#### Installation
 
 To build and upload the OSC LED receiver to a Pi:
 
