@@ -1,15 +1,15 @@
 [Unit]
-Description=MicroTree
+Description=pi_osc_receiver
 Wants=network.target
 After=network.target
 
 [Service]
-ExecStart=/home/pi/micro-tree-rust
-SyslogIdentifier=micro-tree
+ExecStart=/home/pi/pi_osc_receiver
+SyslogIdentifier=pi_osc_receiver
 Restart=always
 TimeoutStopSec=30
 Type=simple
-Environment=RUST_LOG="micro_tree_rust=trace"
+Environment=RUST_LOG="pi_osc_receiver=trace"
 
 [Install]
 WantedBy=multi-user.target
