@@ -1,0 +1,13 @@
+[target.riscv32imc-unknown-none-elf]
+runner = "espflash --speed 921600 --monitor"
+
+rustflags = [
+    "-C", "link-arg=-Tlinkall.x",
+
+    "-C", "force-frame-pointers",
+]
+
+[target.armv7-unknown-linux-gnueabihf]
+# uncomment this to make `cargo run` execute programs via ssh
+runner = "./scripts/runner.sh"
+linker = "arm-linux-gnueabihf-gcc"

@@ -1,0 +1,15 @@
+[Unit]
+Description=MicroTree
+Wants=network.target
+After=network.target
+
+[Service]
+ExecStart=/home/pi/micro-tree-rust
+SyslogIdentifier=micro-tree
+Restart=always
+TimeoutStopSec=30
+Type=simple
+Environment=RUST_LOG="micro_tree_rust=trace"
+
+[Install]
+WantedBy=multi-user.target

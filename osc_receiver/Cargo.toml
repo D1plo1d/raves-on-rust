@@ -1,0 +1,26 @@
+[package]
+name = "osc_receiver"
+version = "0.1.0"
+authors = ["D1plo1d <thatotherdude@gmail.com>"]
+edition = "2018"
+
+[lib]
+name = "osc_receiver"
+path = "src/lib.rs"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+# void = { version = "1.0.2", default-features = false }
+log = { version = "0.4", features = ["serde"] }
+apa102-spi = "0.3.2"
+smart-leds = "0.3.0"
+rosc = { version = "~0.7" }
+embedded-hal = "0.2.7"
+anyhow = { version = "1.0" }
+
+[features]
+default = []
+esp32c3 = []
+pi = []

@@ -1,0 +1,25 @@
+[package]
+name = "micro-tree-rust"
+version = "0.1.0"
+authors = ["D1plo1d <thatotherdude@gmail.com>"]
+edition = "2018"
+
+[[bin]]
+name = "main"
+path = "src/main.rs"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+log = { version = "0.4", features = ["serde"] }
+apa102-spi = "0.3.2"
+smart-leds = "0.3.0"
+rosc = { version = "~0.7" }
+embedded-hal = "0.2.7"
+anyhow = { version = "1.0" }
+osc_receiver = { path = "../osc_receiver", features = ["pi"]}
+
+rppal = { version = "0.13.1", features = ["hal"] }
+pretty_env_logger = "0.4.0"
+local-ip-address = "0.4.4"
