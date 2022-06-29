@@ -15,10 +15,12 @@ use esp_wifi::wifi_interface::timestamp;
 use esp_wifi::{create_network_stack_storage, network_stack_storage};
 use riscv_rt::entry;
 use smoltcp::iface::SocketHandle;
-use smoltcp::socket::{Socket, TcpSocket};
+use smoltcp::socket::{Socket, TcpSocket, UdpPacketMetadata, UdpSocket, UdpSocketBuffer};
 
 use esp_backtrace as _;
+use smoltcp::storage::PacketMetadata;
 
+#[macro_use]
 extern crate alloc;
 
 const SSID: &str = env!("SSID");
@@ -34,8 +36,38 @@ fn main() -> ! {
     rtc_cntl.set_super_wdt_enable(false);
     rtc_cntl.set_wdt_enable(false);
 
-    let mut storage = create_network_stack_storage!(3, 8, 1);
-    let ethernet = create_network_interface(network_stack_storage!(storage));
+    // Create 2 sockets - one for DHCP and one for a placeholder TCP socket which will be replaced by UDP later on
+    let mut storage = create_network_stack_storage!(2, 8, 1);
+    let mut ethernet = create_network_interface(network_stack_storage!(storage));
+
+    // Remove a TCP socket to make room for the UDP socket
+    let mut tcp_socket_handle: Option<SocketHandle> = None;
+
+    for (handle, socket) in ethernet.sockets_mut() {
+        // println!("{:?}", socket);
+        match socket {
+            Socket::Tcp(_) => tcp_socket_handle = Some(handle),
+            _ => {}
+        }
+    }
+
+    ethernet.remove_socket(tcp_socket_handle.unwrap());
+
+    // Add the udp socket, replacing the previous TCP socket
+    let socket_handle = {
+        const size: usize = u8::MAX as usize;
+
+        let udp_rx_buffer = UdpSocketBuffer::new(vec![UdpPacketMetadata::EMPTY], vec![0u8; 64]);
+        let udp_tx_buffer = UdpSocketBuffer::new(vec![UdpPacketMetadata::EMPTY], vec![0u8; 128]);
+
+        // let udp_rx_buffer = UdpSocketBuffer::new(vec![UdpPacketMetadata::EMPTY], vec![0; size]);
+        // let udp_tx_buffer = UdpSocketBuffer::new(vec![UdpPacketMetadata::EMPTY], vec![0; size]);
+
+        let udp_socket = UdpSocket::new(udp_rx_buffer, udp_tx_buffer);
+
+        ethernet.add_socket(udp_socket)
+    };
+
     let mut wifi_interface = esp_wifi::wifi_interface::Wifi::new(ethernet);
 
     init_logger();
@@ -78,22 +110,12 @@ fn main() -> ! {
     }
     println!("{:?}", wifi_interface.get_status());
 
-    println!("Start busy loop on main");
+    println!("Wifi Connected! Start main loop.");
 
     let mut stage = 0;
     let mut idx = 0;
     let mut buffer = [0u8; 8000];
     let mut waiter = 50000;
-
-    let mut socket_handle: Option<SocketHandle> = None;
-
-    for (handle, socket) in wifi_interface.network_interface().sockets_mut() {
-        // println!("{:?}", socket);
-        match socket {
-            Socket::Tcp(_) => socket_handle = Some(handle),
-            _ => {}
-        }
-    }
 
     loop {
         wifi_interface.poll_dhcp().ok();
@@ -110,22 +132,19 @@ fn main() -> ! {
                     println!("Lets connect");
                     let (socket, _cx) = wifi_interface
                         .network_interface()
-                        .get_socket_and_context::<TcpSocket>(socket_handle.unwrap());
+                        .get_socket_and_context::<UdpSocket>(socket_handle);
 
-                    // // UDP
-                    // socket.bind(1234).unwrap();
-
-                    // TCP
-                    socket.listen(1234).unwrap();
+                    // Udp
+                    socket.bind(1234).unwrap();
 
                     stage = 2;
                     // println!("Lets receive UDP packets!");
-                    println!("Lets receive TCP packets!");
+                    println!("Lets receive UDP packets!");
                 }
                 // 1 => {
                 //     let socket = wifi_interface
                 //         .network_interface()
-                //         .get_socket::<TcpSocket>(http_socket_handle.unwrap());
+                //         .get_socket::<UdpSocket>(http_socket_handle);
 
                 //     if socket
                 //         .send_slice(&b"Hello World!\r\n\r\n"[..])
@@ -138,10 +157,10 @@ fn main() -> ! {
                 2 => {
                     let socket = wifi_interface
                         .network_interface()
-                        .get_socket::<TcpSocket>(socket_handle.unwrap());
+                        .get_socket::<UdpSocket>(socket_handle);
 
                     println!("Waiting to receive a packet...");
-                    if let Ok(s) = socket.recv_slice(&mut buffer[idx..]) {
+                    if let Ok((s, _)) = socket.recv_slice(&mut buffer[idx..]) {
                         println!("RX: {:?}", s);
                         if s > 0 {
                             idx += s;
@@ -150,7 +169,7 @@ fn main() -> ! {
                         stage = 3;
 
                         if idx > 0 {
-                            println!("Received a TCP Packet! Bytes: {:?}", idx);
+                            println!("Received a UDP Packet! Bytes: {:?}", idx);
                             println!("{:?}", buffer);
 
                             for c in &buffer[..idx] {
@@ -164,7 +183,7 @@ fn main() -> ! {
                 //     println!("Close");
                 //     let socket = wifi_interface
                 //         .network_interface()
-                //         .get_socket::<TcpSocket>(socket_handle.unwrap());
+                //         .get_socket::<TcpSocket>(socket_handle);
 
                 //     socket.close();
                 //     stage = 4;
