@@ -11,16 +11,16 @@ path = "src/lib.rs"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-serde = { version = "1.0", features = ["derive"] }
+serde = { version = "1.0", features = ["derive"], default-features = false }
 # void = { version = "1.0.2", default-features = false }
 log = { version = "0.4", features = ["serde"] }
 apa102-spi = "0.3.2"
 smart-leds = "0.3.0"
-rosc = { version = "~0.7" }
+rosc = { version = "~0.7", default-features = false }
 embedded-hal = "0.2.7"
-anyhow = { version = "1.0" }
+anyhow = { version = "1.0", default-features = false }
 
 [features]
 default = []
 esp32c3 = []
-pi = []
+std = []

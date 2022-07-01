@@ -1,17 +1,12 @@
-use anyhow::{ Context, Result };
-use log::{info};
+use anyhow::{Context, Result};
+use log::info;
 
-use rppal::spi::{
-    Bus,
-    Mode,
-    SlaveSelect,
-    Spi,
-};
+use rppal::spi::{Bus, Mode, SlaveSelect, Spi};
 
 use apa102_spi::Apa102;
 use local_ip_address::local_ip;
 
-use osc_receiver::led_strip::{ LedStrip, RGB8SmartLedsWrite };
+use osc_receiver::led_strip::{LedStrip, RGB8SmartLedsWrite};
 // use smart_leds::RGB8;
 
 const MHZ: u32 = 1_000_000u32;
@@ -21,7 +16,6 @@ const PORT: u16 = 8001;
 pub fn main() -> Result<()> {
     pretty_env_logger::init();
 
-
     // Print the local ip address
     if let Ok(ip_address) = local_ip() {
         println!("Listening for OSC packets at {}:{}\n", ip_address, PORT);
@@ -30,12 +24,7 @@ pub fn main() -> Result<()> {
     }
 
     // Modes: https://en.wikipedia.org/wiki/Serial_Peripheral_Interface_Bus#Clock_polarity_and_phase
-    let spi: Spi = Spi::new(
-        Bus::Spi0,
-        SlaveSelect::Ss0,
-        12 * MHZ,
-        Mode::Mode0,
-    )
+    let spi: Spi = Spi::new(Bus::Spi0, SlaveSelect::Ss0, 12 * MHZ, Mode::Mode0)
         .context("Unable to connect to SPI. Are you not running on a Raspberry Pi?")?;
 
     let mut apa102 = Apa102::new(spi);
@@ -55,10 +44,9 @@ pub fn main() -> Result<()> {
 
     use std::net::UdpSocket;
 
-    let socket = UdpSocket::bind(format!("0.0.0.0:{}", PORT))
-        .expect("couldn't bind to address");
+    let socket = UdpSocket::bind(format!("0.0.0.0:{}", PORT)).expect("couldn't bind to address");
 
-        let mut packet_buf = [0; 65_507];
+    let mut packet_buf = [0; 65_507];
 
     loop {
         let packet_size = socket.recv(&mut packet_buf).unwrap();

@@ -1,10 +1,10 @@
 #![no_std]
 #![no_main]
 
+use apa102_spi::Apa102;
 use esp_println::println;
 use riscv_rt::entry;
-use smart_leds::{RGB8, SmartLedsWrite};
-use apa102_spi::Apa102;
+use smart_leds::{SmartLedsWrite, RGB8};
 
 use esp32c3_hal::{
     clock::ClockControl,
@@ -12,9 +12,7 @@ use esp32c3_hal::{
     pac::Peripherals,
     prelude::*,
     spi::{Spi, SpiMode},
-    Delay,
-    RtcCntl,
-    Timer,
+    Delay, RtcCntl, Timer,
 };
 
 use esp_backtrace as _;

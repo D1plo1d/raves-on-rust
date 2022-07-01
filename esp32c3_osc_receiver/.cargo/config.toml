@@ -7,16 +7,17 @@ rustflags = [
     "-C", "force-frame-pointers",
 ]
 
-[target.xtensa-esp32-none-elf]
-runner = "espflash --speed 921600 --monitor"
-
-rustflags = [
-    "-C", "link-arg=-Tlinkall.x",
-    "-C", "link-arg=-Tesp32_rom_functions.x",
-]
-
 [build]
 target = "riscv32imc-unknown-none-elf"
 
 [unstable]
 build-std = [ "core", "alloc" ]
+
+# [profile.release]
+# strip = true  # Automatically strip symbols from the binary.
+# lto = true
+
+# [profile.dev]
+# strip = true  # Automatically strip symbols from the binary.
+# lto = true
+# opt-level = "s"
