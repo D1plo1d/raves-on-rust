@@ -19,6 +19,7 @@ smart-leds = "0.3.0"
 rosc = { version = "~0.7", default-features = false }
 embedded-hal = "0.2.7"
 anyhow = { version = "1.0", default-features = false }
+ws2812-spi = "0.4.0"
 
 [features]
 default = []

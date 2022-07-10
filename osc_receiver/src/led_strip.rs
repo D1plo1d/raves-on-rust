@@ -8,6 +8,7 @@ use core::marker::{Send, Sync};
 use core::option::Option::*;
 use core::result::Result::*;
 use embedded_hal::blocking::spi::Write;
+use embedded_hal::spi::FullDuplex;
 use log::{info, trace, warn};
 use rosc::{OscPacket, OscType};
 use smart_leds::{SmartLedsWrite, RGB8};
@@ -37,6 +38,15 @@ where
 impl<SPI> RGB8SmartLedsWrite for apa102_spi::Apa102<SPI>
 where
     SPI: Write<u8, Error = Infallible>,
+{
+    fn write_rgb8(&mut self, iterator: &mut dyn Iterator<Item = RGB8>) -> Result<()> {
+        Ok(self.write(iterator).unwrap())
+    }
+}
+
+impl<SPI> RGB8SmartLedsWrite for ws2812_spi::Ws2812<SPI>
+where
+    SPI: FullDuplex<u8, Error = Infallible>,
 {
     fn write_rgb8(&mut self, iterator: &mut dyn Iterator<Item = RGB8>) -> Result<()> {
         Ok(self.write(iterator).unwrap())

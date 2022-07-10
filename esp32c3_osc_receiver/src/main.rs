@@ -4,7 +4,7 @@
 #![feature(c_variadic)]
 #![feature(const_mut_refs)]
 
-use alloc::vec::Vec;
+use alloc::{boxed::Box, vec::Vec};
 use apa102_spi::Apa102;
 use core::panic::PanicInfo;
 use embedded_svc::wifi::{
@@ -35,6 +35,7 @@ extern crate alloc;
 
 const SSID: &str = env!("SSID");
 const PASSWORD: &str = env!("PASSWORD");
+const LED_TYPE: &str = env!("LED_TYPE");
 
 #[global_allocator]
 static ALLOCATOR: esp_alloc::EspHeap = esp_alloc::EspHeap::empty();
@@ -75,7 +76,9 @@ fn main() -> ! {
     // timer0.disable();
     // timer1.disable();
 
-    let mut apa102 = {
+    let mut smart_leds: Vec<&mut dyn RGB8SmartLedsWrite> = Vec::new();
+
+    let mut boxed_smart_led: Box<dyn RGB8SmartLedsWrite> = if LED_TYPE == "APA102" {
         let io = IO::new(peripherals.GPIO, peripherals.IO_MUX);
         // Connect these two to the LEDs
         let sclk = io.pins.gpio6;
@@ -97,12 +100,38 @@ fn main() -> ! {
             &clocks,
         );
 
-        Apa102::new(spi)
+        let mut apa102 = Apa102::new(spi);
+
+        Box::new(apa102)
+    } else if LED_TYPE == "WS2812B" {
+        let io = IO::new(peripherals.GPIO, peripherals.IO_MUX);
+        // Connect these two to the LEDs
+        let sclk = io.pins.gpio6;
+        let mosi = io.pins.gpio7;
+
+        let miso = io.pins.gpio2;
+        let cs = io.pins.gpio10;
+
+        let spi = Spi::new(
+            peripherals.SPI2,
+            sclk,
+            mosi,
+            Some(miso),
+            Some(cs),
+            3u32.MHz(),
+            SpiMode::Mode0,
+            &mut system.peripheral_clock_control,
+            &clocks,
+        );
+
+        let mut ws2812b = ws2812_spi::Ws2812::new(spi);
+
+        Box::new(ws2812b)
+    } else {
+        panic!("Invalid LED_TYPE. Must be either 'WS2812B' or 'APA102'.");
     };
 
-    let mut smart_leds: Vec<&mut dyn RGB8SmartLedsWrite> = Vec::new();
-
-    smart_leds.push(&mut apa102);
+    smart_leds.push(boxed_smart_led.as_mut());
 
     let mut led_strips = smart_leds
         .into_iter()
