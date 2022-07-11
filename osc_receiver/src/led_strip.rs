@@ -13,8 +13,8 @@ use log::{info, trace, warn};
 use rosc::{OscPacket, OscType};
 use smart_leds::{SmartLedsWrite, RGB8};
 
+// pub const STRIP_LENGTH: usize = 450;
 pub const STRIP_LENGTH: usize = 450;
-// pub const STRIP_LENGTH: usize = 150;
 
 type LedStripData = [RGB8; STRIP_LENGTH];
 
@@ -122,9 +122,11 @@ fn receive_osc_packet<'a, I>(
             for osc_type in input.into_iter() {
                 match osc_type {
                     OscType::Color(c) => {
+                        // If the current LED strip ends before the next index i then reset the index and go to
+                        // the next LED strip
                         if current_strip
                             .as_ref()
-                            .map(|(strip, i): &(&mut LedStripData, usize)| *i >= strip.len())
+                            .map(|(strip, i): &(&mut LedStripData, usize)| *i >= strip.len() - 1)
                             .unwrap_or(true)
                         {
                             if let Some(strip) = strips.next() {
@@ -133,18 +135,11 @@ fn receive_osc_packet<'a, I>(
                         }
 
                         if let Some((led_strip, i)) = current_strip.as_mut() {
-                            // if c.red != 0 {
-                            //     dbg!(&i, &c);
-                            // }
-
                             led_strip[*i].r = c.red;
                             led_strip[*i].g = c.green;
                             led_strip[*i].b = c.blue;
 
                             // dbg!(&i);
-                            // led_strip[*i].r = 0x10;
-                            // led_strip[*i].g = 0x10;
-                            // led_strip[*i].b = 0x10;
 
                             *i += 1;
                         } else {

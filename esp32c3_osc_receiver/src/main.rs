@@ -26,6 +26,7 @@ use esp_wifi::wifi_interface::timestamp;
 use esp_wifi::{create_network_stack_storage, network_stack_storage};
 use osc_receiver::led_strip::{LedStrip, RGB8SmartLedsWrite};
 use riscv_rt::entry;
+use smart_leds::RGB8;
 use smoltcp::iface::SocketHandle;
 use smoltcp::socket::{Socket, UdpPacketMetadata, UdpSocket, UdpSocketBuffer};
 
@@ -54,6 +55,19 @@ fn init_heap() {
 fn oom(_: core::alloc::Layout) -> ! {
     println!("Out of alloc memory");
     loop {}
+}
+
+// Set the first and third LED to indicate connection status
+fn set_indicator_leds(smart_leds: &mut Vec<LedStrip>, color: RGB8) {
+    let colors = [color.clone(), RGB8::default(), color.clone()];
+
+    smart_leds
+        .iter_mut()
+        .next()
+        .unwrap()
+        .smart_led
+        .write_rgb8(&mut colors.into_iter())
+        .unwrap();
 }
 
 #[entry]
@@ -94,7 +108,7 @@ fn main() -> ! {
             Some(miso),
             Some(cs),
             // These LED strips should work up to 12 MHz but depending on wiring interference may limit that
-            1u32.kHz(),
+            12u32.MHz(),
             SpiMode::Mode0,
             &mut system.peripheral_clock_control,
             &clocks,
@@ -137,6 +151,16 @@ fn main() -> ! {
         .into_iter()
         .map(LedStrip::new)
         .collect::<Vec<_>>();
+
+    // Set the indicator LEDs to red to indicate that the microcontroller has restarted
+    set_indicator_leds(
+        &mut led_strips,
+        RGB8 {
+            r: 0xF,
+            g: 0x0,
+            b: 0x0,
+        },
+    );
 
     // Create 2 sockets - one for DHCP and one for a placeholder TCP socket which will be replaced by UDP later on
     let mut storage = create_network_stack_storage!(2, 8, 1);
@@ -194,7 +218,6 @@ fn main() -> ! {
     //     }
     // }
 
-    println!("Initializing Wifi...");
     let client_config = Configuration::Client(ClientConfiguration {
         ssid: SSID.into(),
         password: PASSWORD.into(),
@@ -205,6 +228,18 @@ fn main() -> ! {
     // println!("{:?}", wifi_interface.get_capabilities());
     // println!("{:?}", wifi_interface.get_status());
 
+    println!("Initializing Wifi Interface...");
+
+    // Set the indicator LEDs to orange to indicate that the microcontroller is waiting on the wifi interface
+    set_indicator_leds(
+        &mut led_strips,
+        RGB8 {
+            r: 0xF,
+            g: 0xF,
+            b: 0x0,
+        },
+    );
+
     // wait to get connected
     loop {
         if let Status(ClientStatus::Started(_), _) = wifi_interface.get_status() {
@@ -214,6 +249,16 @@ fn main() -> ! {
     // println!("{:?}", wifi_interface.get_status());
 
     println!("Connecting to {}...", &SSID);
+
+    // Set the first and third LED to green to indicate that the microcontroller is connecting to Wifi
+    set_indicator_leds(
+        &mut led_strips,
+        RGB8 {
+            r: 0x0,
+            g: 0xF,
+            b: 0x0,
+        },
+    );
 
     let mut stage = 0;
 
@@ -233,8 +278,6 @@ fn main() -> ! {
         {
             match stage {
                 0 => {
-                    println!("Wifi Connected! IP config is {:?}", config);
-
                     let (socket, _cx) = wifi_interface
                         .network_interface()
                         .get_socket_and_context::<UdpSocket>(socket_handle);
@@ -244,7 +287,10 @@ fn main() -> ! {
 
                     stage = 1;
 
-                    println!("Ready to receive UDP packet!");
+                    // Turn off the connection indicator LEDs
+                    set_indicator_leds(&mut led_strips, RGB8::default());
+
+                    println!("Wifi Connected! Listening on {}:9000", config.ip);
                 }
                 1 => {
                     let socket = wifi_interface
@@ -261,7 +307,7 @@ fn main() -> ! {
                         let osc_packet = rosc::decoder::decode_udp(udp_packet);
 
                         if let Ok((&[], osc_packet)) = osc_packet {
-                            println!("Valid packet! ({:?} Bytes)", udp_packet.len());
+                            // println!("Valid packet! ({:?} Bytes)", udp_packet.len());
                             LedStrip::update(&mut led_strips, osc_packet);
                         } else {
                             println!("Invalid packet");
