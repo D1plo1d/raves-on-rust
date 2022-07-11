@@ -159,14 +159,12 @@ fn main() -> ! {
 
     // Add the udp socket, replacing the previous TCP socket
     let socket_handle = {
-        const PACKET_SIZE: usize = u16::MAX as usize;
-        static mut UDP_RX_DATA: [u8; PACKET_SIZE] = [0; PACKET_SIZE];
+        const ETHERNET_MTU: usize = 1500 as usize;
+        static mut UDP_RX_DATA: [u8; ETHERNET_MTU] = [0; ETHERNET_MTU];
 
         let udp_rx_buffer =
             unsafe { UdpSocketBuffer::new(vec![UdpPacketMetadata::EMPTY], &mut UDP_RX_DATA[..]) };
 
-        // let udp_rx_buffer =
-        //     UdpSocketBuffer::new(vec![UdpPacketMetadata::EMPTY], vec![0u8; PACKET_SIZE]);
         let udp_tx_buffer = UdpSocketBuffer::new(vec![UdpPacketMetadata::EMPTY], vec![0u8; 0]);
 
         let udp_socket = UdpSocket::new(udp_rx_buffer, udp_tx_buffer);
