@@ -13,8 +13,8 @@ use log::{info, trace, warn};
 use rosc::{OscPacket, OscType};
 use smart_leds::{SmartLedsWrite, RGB8};
 
-// pub const STRIP_LENGTH: usize = 450;
-pub const STRIP_LENGTH: usize = 4;
+pub const STRIP_LENGTH: usize = 450;
+// pub const STRIP_LENGTH: usize = 150;
 
 type LedStripData = [RGB8; STRIP_LENGTH];
 

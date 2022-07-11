@@ -6,7 +6,6 @@
 
 use alloc::{boxed::Box, vec::Vec};
 use apa102_spi::Apa102;
-use core::panic::PanicInfo;
 use embedded_svc::wifi::{
     ClientConfiguration, ClientConnectionStatus, ClientIpStatus, ClientStatus, Configuration,
     Status, Wifi,
@@ -17,7 +16,7 @@ use esp32c3_hal::{
     pac::Peripherals,
     prelude::*,
     spi::{Spi, SpiMode},
-    RtcCntl, Timer,
+    RtcCntl,
 };
 use esp_backtrace as _;
 use esp_println::println;
@@ -43,7 +42,7 @@ static ALLOCATOR: esp_alloc::EspHeap = esp_alloc::EspHeap::empty();
 fn init_heap() {
     use core::mem::MaybeUninit;
 
-    const HEAP_SIZE: usize = 4 * 1024;
+    const HEAP_SIZE: usize = 64 * 1024;
     static mut HEAP: [MaybeUninit<u8>; HEAP_SIZE] = [MaybeUninit::uninit(); HEAP_SIZE];
 
     unsafe {
@@ -53,6 +52,7 @@ fn init_heap() {
 
 #[alloc_error_handler]
 fn oom(_: core::alloc::Layout) -> ! {
+    println!("Out of alloc memory");
     loop {}
 }
 
@@ -100,7 +100,7 @@ fn main() -> ! {
             &clocks,
         );
 
-        let mut apa102 = Apa102::new(spi);
+        let apa102 = Apa102::new(spi);
 
         Box::new(apa102)
     } else if LED_TYPE == "WS2812B" {
@@ -124,7 +124,7 @@ fn main() -> ! {
             &clocks,
         );
 
-        let mut ws2812b = ws2812_spi::Ws2812::new(spi);
+        let ws2812b = ws2812_spi::Ws2812::new(spi);
 
         Box::new(ws2812b)
     } else {
@@ -159,13 +159,15 @@ fn main() -> ! {
 
     // Add the udp socket, replacing the previous TCP socket
     let socket_handle = {
-        // const PACKET_SIZE: usize = u8::MAX as usize;
-        const PACKET_SIZE: usize = 128;
+        const PACKET_SIZE: usize = u16::MAX as usize;
+        static mut UDP_RX_DATA: [u8; PACKET_SIZE] = [0; PACKET_SIZE];
 
         let udp_rx_buffer =
-            UdpSocketBuffer::new(vec![UdpPacketMetadata::EMPTY], vec![0u8; PACKET_SIZE]);
-        let udp_tx_buffer =
-            UdpSocketBuffer::new(vec![UdpPacketMetadata::EMPTY], vec![0u8; PACKET_SIZE]);
+            unsafe { UdpSocketBuffer::new(vec![UdpPacketMetadata::EMPTY], &mut UDP_RX_DATA[..]) };
+
+        // let udp_rx_buffer =
+        //     UdpSocketBuffer::new(vec![UdpPacketMetadata::EMPTY], vec![0u8; PACKET_SIZE]);
+        let udp_tx_buffer = UdpSocketBuffer::new(vec![UdpPacketMetadata::EMPTY], vec![0u8; 0]);
 
         let udp_socket = UdpSocket::new(udp_rx_buffer, udp_tx_buffer);
 
@@ -183,18 +185,18 @@ fn main() -> ! {
     )
     .unwrap();
 
-    println!("{:?}", wifi_interface.get_status());
+    // println!("{:?}", wifi_interface.get_status());
 
-    println!("Start Wifi Scan");
-    let res = wifi_interface.scan();
-    println!("Found Wifi Networks:");
-    if let Ok(res) = res {
-        for ap in res {
-            println!("- {:?}", ap.ssid);
-        }
-    }
+    // println!("Start Wifi Scan");
+    // let res = wifi_interface.scan();
+    // println!("Found Wifi Networks:");
+    // if let Ok(res) = res {
+    //     for ap in res {
+    //         println!("- {:?}", ap.ssid);
+    //     }
+    // }
 
-    println!("Connecting to {}...", &SSID);
+    println!("Initializing Wifi...");
     let client_config = Configuration::Client(ClientConfiguration {
         ssid: SSID.into(),
         password: PASSWORD.into(),
@@ -213,7 +215,7 @@ fn main() -> ! {
     }
     // println!("{:?}", wifi_interface.get_status());
 
-    println!("Wifi Connected! Starting DHCP...");
+    println!("Connecting to {}...", &SSID);
 
     let mut stage = 0;
 
@@ -233,7 +235,7 @@ fn main() -> ! {
         {
             match stage {
                 0 => {
-                    println!("DHCP Connected! IP config is {:?}", config);
+                    println!("Wifi Connected! IP config is {:?}", config);
 
                     let (socket, _cx) = wifi_interface
                         .network_interface()
@@ -252,8 +254,6 @@ fn main() -> ! {
                         .get_socket::<UdpSocket>(socket_handle);
 
                     if let Ok((udp_packet, _)) = socket.recv() {
-                        println!("Received a UDP Packet! ({:?} Bytes)", udp_packet.len());
-
                         // for c in udp_packet {
                         //     print!("{}", *c as char);
                         // }
@@ -263,9 +263,10 @@ fn main() -> ! {
                         let osc_packet = rosc::decoder::decode_udp(udp_packet);
 
                         if let Ok((&[], osc_packet)) = osc_packet {
-                            println!("OSC Packet Validated");
-                            println!("OSC Packet: {:?}", osc_packet);
+                            println!("Valid packet! ({:?} Bytes)", udp_packet.len());
                             LedStrip::update(&mut led_strips, osc_packet);
+                        } else {
+                            println!("Invalid packet");
                         }
                     }
                 }

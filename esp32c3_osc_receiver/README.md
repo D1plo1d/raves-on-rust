@@ -1,5 +1,7 @@
-Currently this does not receive OSC packets. The project here is entirely asperational.
+A OSC Receiver for ESP32C3 microcontrollers.
 
 ## Installation
 
-`SSID=my_wifi_network PASSWORD=my_wifi_password cargo +nightly run --release`
+`SSID=my_wifi_network PASSWORD=my_wifi_password LED_TYPE=APA102 cargo +nightly run --release`
+
+- LED_TYPE can be either WS2812B or APA102
