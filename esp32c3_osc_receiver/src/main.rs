@@ -11,12 +11,12 @@ use embedded_svc::wifi::{
     Status, Wifi,
 };
 use esp32c3_hal::{
-    clock::ClockControl,
+    clock::{ClockControl, CpuClock},
     gpio::IO,
     pac::Peripherals,
     prelude::*,
     spi::{Spi, SpiMode},
-    RtcCntl,
+    Rtc,
 };
 use esp_backtrace as _;
 use esp_println::println;
@@ -37,25 +37,25 @@ const SSID: &str = env!("SSID");
 const PASSWORD: &str = env!("PASSWORD");
 const LED_TYPE: &str = env!("LED_TYPE");
 
-#[global_allocator]
-static ALLOCATOR: esp_alloc::EspHeap = esp_alloc::EspHeap::empty();
+// #[global_allocator]
+// static ALLOCATOR: esp_alloc::EspHeap = esp_alloc::EspHeap::empty();
 
-fn init_heap() {
-    use core::mem::MaybeUninit;
+// fn init_heap() {
+//     use core::mem::MaybeUninit;
 
-    const HEAP_SIZE: usize = 64 * 1024;
-    static mut HEAP: [MaybeUninit<u8>; HEAP_SIZE] = [MaybeUninit::uninit(); HEAP_SIZE];
+//     const HEAP_SIZE: usize = 64 * 1024;
+//     static mut HEAP: [MaybeUninit<u8>; HEAP_SIZE] = [MaybeUninit::uninit(); HEAP_SIZE];
 
-    unsafe {
-        ALLOCATOR.init(HEAP.as_ptr() as usize, HEAP_SIZE);
-    }
-}
+//     unsafe {
+//         ALLOCATOR.init(HEAP.as_ptr() as usize, HEAP_SIZE);
+//     }
+// }
 
-#[alloc_error_handler]
-fn oom(_: core::alloc::Layout) -> ! {
-    println!("Out of alloc memory");
-    loop {}
-}
+// #[alloc_error_handler]
+// fn oom(_: core::alloc::Layout) -> ! {
+//     println!("Out of alloc memory");
+//     loop {}
+// }
 
 // Set the first and third LED to indicate connection status
 fn set_indicator_leds(smart_leds: &mut Vec<LedStrip>, color: RGB8) {
@@ -72,21 +72,23 @@ fn set_indicator_leds(smart_leds: &mut Vec<LedStrip>, color: RGB8) {
 
 #[entry]
 fn main() -> ! {
+    init_logger();
     esp_wifi::init_heap();
-    init_heap();
+    // init_heap();
 
     let mut peripherals = Peripherals::take().unwrap();
 
     let mut system = peripherals.SYSTEM.split();
-    let clocks = ClockControl::boot_defaults(system.clock_control).freeze();
+    // let clocks = ClockControl::boot_defaults(system.clock_control).freeze();
+    let clocks = ClockControl::configure(system.clock_control, CpuClock::Clock160MHz).freeze();
 
-    let mut rtc_cntl = RtcCntl::new(peripherals.RTC_CNTL);
+    let mut rtc = Rtc::new(peripherals.RTC_CNTL);
     // let mut timer0 = Timer::new(peripherals.TIMG0);
     // let mut timer1 = Timer::new(peripherals.TIMG1);
 
     // Disable watchdog timers
-    rtc_cntl.set_super_wdt_enable(false);
-    rtc_cntl.set_wdt_enable(false);
+    rtc.swd.disable();
+    rtc.rwdt.disable();
     // timer0.disable();
     // timer1.disable();
 
@@ -105,8 +107,8 @@ fn main() -> ! {
             peripherals.SPI2,
             sclk,
             mosi,
-            Some(miso),
-            Some(cs),
+            miso,
+            cs,
             // These LED strips should work up to 12 MHz but depending on wiring interference may limit that
             12u32.MHz(),
             SpiMode::Mode0,
@@ -130,8 +132,8 @@ fn main() -> ! {
             peripherals.SPI2,
             sclk,
             mosi,
-            Some(miso),
-            Some(cs),
+            miso,
+            cs,
             3u32.MHz(),
             SpiMode::Mode0,
             &mut system.peripheral_clock_control,
@@ -198,14 +200,7 @@ fn main() -> ! {
 
     let mut wifi_interface = esp_wifi::wifi_interface::Wifi::new(ethernet);
 
-    init_logger();
-
-    initialize(
-        &mut peripherals.SYSTIMER,
-        &mut peripherals.INTERRUPT_CORE0,
-        peripherals.RNG,
-    )
-    .unwrap();
+    initialize(&mut peripherals.SYSTIMER, peripherals.RNG, &clocks).unwrap();
 
     // println!("{:?}", wifi_interface.get_status());
 

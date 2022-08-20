@@ -48,7 +48,7 @@ version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5deb64efa5bd81e31fcd1938615a6d98c82eafcbcd787162b6f63b91d6bac5b3"
 dependencies = [
- "rustc_version",
+ "rustc_version 0.2.3",
 ]
 
 [[package]]
@@ -213,16 +213,16 @@ checksum = "36673b79844ff4ec0e3f00aeca0b2cfff564ff6739ab9801d13f45a8ec6cc1c7"
 
 [[package]]
 name = "embedded-svc"
-version = "0.21.3"
+version = "0.22.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d915ef251b4b19f51943e306f9cf3b8d61f79cd790624f6a8982cfa85aca3622"
+checksum = "85fb2cc875d8cb13978429beb5af7dea5f7f84d5d41187ff9593b83374d3fe77"
 dependencies = [
- "anyhow",
+ "embedded-io",
  "enumset",
+ "heapless",
  "log",
  "no-std-net",
  "serde",
- "serde_json",
 ]
 
 [[package]]
@@ -249,7 +249,8 @@ dependencies = [
 [[package]]
 name = "esp-alloc"
 version = "0.1.0"
-source = "git+https://github.com/esp-rs/esp-alloc#310eb24f8093b1919206b364d40627c6b50e2c24"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "747141836aa66f690bb8434f7044781b629c686fa699581aa3940f1b8ffee4ea"
 dependencies = [
  "bare-metal 1.0.0",
  "linked_list_allocator",
@@ -260,17 +261,17 @@ dependencies = [
 [[package]]
 name = "esp-backtrace"
 version = "0.1.0"
-source = "git+https://github.com/esp-rs/esp-backtrace.git#b7c9f494de049ab21742fef0adcb710ce007e137"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "37a75ce7f6493d0330dac12b8261482cd05ddd1957a44e441fd5621ccf9ff55f"
 dependencies = [
  "esp-println",
- "esp32c3-hal",
  "riscv 0.8.0",
 ]
 
 [[package]]
 name = "esp-hal-common"
 version = "0.1.0"
-source = "git+https://github.com/esp-rs/esp-hal#3d481901a5684d38b852422b729a4765d038aa87"
+source = "git+https://github.com/esp-rs/esp-hal#9d0a1f66850277014c46723ae7ebbf8fd116d61d"
 dependencies = [
  "cfg-if",
  "embedded-hal 0.2.7",
@@ -281,14 +282,13 @@ dependencies = [
  "paste",
  "riscv 0.8.0",
  "riscv-atomic-emulation-trap",
- "smart-leds-trait",
  "void",
 ]
 
 [[package]]
 name = "esp-hal-procmacros"
 version = "0.1.0"
-source = "git+https://github.com/esp-rs/esp-hal#3d481901a5684d38b852422b729a4765d038aa87"
+source = "git+https://github.com/esp-rs/esp-hal#9d0a1f66850277014c46723ae7ebbf8fd116d61d"
 dependencies = [
  "darling 0.14.1",
  "proc-macro-error",
@@ -311,7 +311,7 @@ dependencies = [
  "esp32c3-hal",
  "log",
  "osc_receiver",
- "riscv-rt",
+ "riscv-rt 0.8.1",
  "riscv-target",
  "rosc",
  "smart-leds",
@@ -321,13 +321,14 @@ dependencies = [
 
 [[package]]
 name = "esp-println"
-version = "0.1.0"
-source = "git+https://github.com/esp-rs/esp-println.git#a4102373005e233975dbbbe0def2e8bacbadd641"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dab33baae57ce7c0869c32885ff136f9c8405e0c201d039ccd767c3e7f79502b"
 
 [[package]]
 name = "esp-wifi"
 version = "0.1.0"
-source = "git+https://github.com/jessebraham/esp-wifi?branch=fixes/esp-alloc#493697d6bb41c43c2ad87543ea2b3b422e870ccf"
+source = "git+https://github.com/esp-rs/esp-wifi#f9358ceca51a9303928ad35295281ef0b3526062"
 dependencies = [
  "atomic-polyfill",
  "critical-section",
@@ -337,10 +338,12 @@ dependencies = [
  "enumset",
  "esp-alloc",
  "esp32c3-hal",
+ "fugit",
+ "heapless",
  "log",
  "nb 1.0.0",
  "riscv 0.8.0",
- "riscv-rt",
+ "riscv-rt 0.9.0",
  "riscv-target",
  "smoltcp",
  "void",
@@ -349,18 +352,18 @@ dependencies = [
 [[package]]
 name = "esp32c3"
 version = "0.4.0"
-source = "git+https://github.com/esp-rs/esp-pacs.git?branch=with_source#4bd860222534d4b0bee2db92290b6d30bca6d273"
+source = "git+https://github.com/esp-rs/esp-pacs.git?branch=with_source#23f9f7626867c98c98bac45f93109a8b794dbb66"
 dependencies = [
  "bare-metal 1.0.0",
  "riscv 0.8.0",
- "riscv-rt",
+ "riscv-rt 0.9.0",
  "vcell",
 ]
 
 [[package]]
 name = "esp32c3-hal"
 version = "0.1.0"
-source = "git+https://github.com/esp-rs/esp-hal#3d481901a5684d38b852422b729a4765d038aa87"
+source = "git+https://github.com/esp-rs/esp-hal#9d0a1f66850277014c46723ae7ebbf8fd116d61d"
 dependencies = [
  "bare-metal 1.0.0",
  "embedded-hal 0.2.7",
@@ -368,7 +371,7 @@ dependencies = [
  "esp-hal-common",
  "r0",
  "riscv 0.8.0",
- "riscv-rt",
+ "riscv-rt 0.9.0",
 ]
 
 [[package]]
@@ -396,16 +399,32 @@ dependencies = [
 ]
 
 [[package]]
+name = "hash32"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b0c35f58762feb77d74ebe43bdbc3210f09be9fe6742234d573bacc26ed92b67"
+dependencies = [
+ "byteorder",
+]
+
+[[package]]
+name = "heapless"
+version = "0.7.16"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "db04bc24a18b9ea980628ecf00e6c0264f3c1426dac36c00cb49b6fbad8b0743"
+dependencies = [
+ "atomic-polyfill",
+ "hash32",
+ "rustc_version 0.4.0",
+ "spin",
+ "stable_deref_trait",
+]
+
+[[package]]
 name = "ident_case"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b9e0384b61958566e926dc50660321d12159025e767c18e043daf26b70104c39"
-
-[[package]]
-name = "itoa"
-version = "1.0.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "112c678d4050afce233f4f2852bb2eb519230b3cf12f33585275537d7e41578d"
 
 [[package]]
 name = "lazy_static"
@@ -415,9 +434,9 @@ checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 
 [[package]]
 name = "linked_list_allocator"
-version = "0.9.1"
+version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "549ce1740e46b291953c4340adcd74c59bcf4308f4cac050fd33ba91b7168f4a"
+checksum = "636c3bc929db632724303109c88d5d559a2a60f62243bb041387f03fa081d94a"
 dependencies = [
  "spinning_top",
 ]
@@ -662,7 +681,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "89d8ed35d10950305d9abbc3fa49540b948e03b653c85012b4cd9f7d249029f0"
 dependencies = [
  "riscv 0.7.0",
- "riscv-rt",
+ "riscv-rt 0.8.1",
  "riscv-target",
 ]
 
@@ -674,7 +693,19 @@ checksum = "ab9f28dc850356196a36078c51c9dc7b46014a29a8fde35d5f81c99e489d0e00"
 dependencies = [
  "r0",
  "riscv 0.7.0",
- "riscv-rt-macros",
+ "riscv-rt-macros 0.1.6",
+ "riscv-target",
+]
+
+[[package]]
+name = "riscv-rt"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "527ddfacbbfeed89256163c2655b0392c4aa76dd95c0189dc05044bf2c47c3f8"
+dependencies = [
+ "r0",
+ "riscv 0.8.0",
+ "riscv-rt-macros 0.2.0",
  "riscv-target",
 ]
 
@@ -688,6 +719,17 @@ dependencies = [
  "quote 0.6.13",
  "rand",
  "syn 0.15.44",
+]
+
+[[package]]
+name = "riscv-rt-macros"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f38509d7b17c2f604ceab3e5ff8ac97bb8cd2f544688c512be75c715edaf4daf"
+dependencies = [
+ "proc-macro2 1.0.40",
+ "quote 1.0.20",
+ "syn 1.0.98",
 ]
 
 [[package]]
@@ -716,14 +758,17 @@ version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "138e3e0acb6c9fb258b19b67cb8abd63c00679d2851805ea151465464fe9030a"
 dependencies = [
- "semver",
+ "semver 0.9.0",
 ]
 
 [[package]]
-name = "ryu"
-version = "1.0.10"
+name = "rustc_version"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f3f6f92acf49d1b98f7a81226834412ada05458b7364277387724a237f062695"
+checksum = "bfa0f585226d2e68097d4f95d113b15b83a82e819ab25717ec0590d9584ef366"
+dependencies = [
+ "semver 1.0.13",
+]
 
 [[package]]
 name = "scopeguard"
@@ -739,6 +784,12 @@ checksum = "1d7eb9ef2c18661902cc47e535f9bc51b78acd254da71d375c2f6720d9a40403"
 dependencies = [
  "semver-parser",
 ]
+
+[[package]]
+name = "semver"
+version = "1.0.13"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "93f6841e709003d68bb2deee8c343572bf446003ec20a583e76f7b15cebf3711"
 
 [[package]]
 name = "semver-parser"
@@ -764,17 +815,6 @@ dependencies = [
  "proc-macro2 1.0.40",
  "quote 1.0.20",
  "syn 1.0.98",
-]
-
-[[package]]
-name = "serde_json"
-version = "1.0.81"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9b7ce2b32a1aed03c558dc61a5cd328f15aff2dbc17daad8fb8af04d2100e15c"
-dependencies = [
- "itoa",
- "ryu",
- "serde",
 ]
 
 [[package]]
@@ -824,6 +864,12 @@ checksum = "75adad84ee84b521fb2cca2d4fd0f1dab1d8d026bda3c5bea4ca63b5f9f9293c"
 dependencies = [
  "lock_api",
 ]
+
+[[package]]
+name = "stable_deref_trait"
+version = "1.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a8f112729512f8e442d81f95a8a7ddf2b7c6b8a1a6f509a95864142b30cab2d3"
 
 [[package]]
 name = "strsim"
